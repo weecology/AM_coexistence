@@ -34,13 +34,14 @@ compute_A_pot = function(a1, a2, b1, b2){
   return(A)
 }
 
-plot_pot_rea = function(b1, b2, x_lim, y_lim){
+plot_pot_rea = function(b1, b2, x_lim, y_lim, main_lab){
   # Function to overlay the potential coexistence region with realized region
   # x_lim, y_lim - upper limit of x and y axes in plot
+  # main_lab - subplot label in the title
   dat = read.csv(paste('NumRange_', b1, '_', b2, '.csv', sep = ''), colClasses = rep('numeric', 2))
   plot(dat$d1, dat$d2, xlim = c(0, x_lim), ylim = c(0, y_lim), type = 'p', pch = 20, col = '#BABABA',
     xlab = expression(d[1]), ylab = expression(d[2]),
-    main = bquote(paste(b[1], '=', .(b1), ', ', b[2], '=', .(b2), sep = '')), cex.lab = 2,
+    main = bquote(paste(.(main_lab), ' ', b[1], '=', .(b1), ', ', b[2], '=', .(b2), sep = '')), cex.lab = 2,
     cex.axis = 2, xaxs = 'i', yaxs = 'i', cex.main = 2)
   curve(1/((1/x)-b1+b2), from = 0, to = (b1-1)/b1/(b1+1), add = T, lty = 'dashed', lwd = 2)
   curve((b1+1)/(b2+1)*x, from = 0, to = (b1-1)/b1/(b1+1), add = T, lty = 'dashed', lwd = 2)
@@ -87,30 +88,6 @@ foreach(i=1:dim(b_list)[1]) %dopar% {
 #### Figure 1 ####
 png(filename = 'Fig1.png', width = 800, height = 800)
 
-b1 = 10
-b2_list = c(0, 0, 2, 2)
-d1_list = c(0.04, 0.06, 0.06, 0.08)
-d2_list = c(0.1, 0.1, 0.16, 0.16)
-R_max = c(0.2, 0.2, 1, 1)
-legend_list = c('(A)', '(B)', '(C)', '(D)')
-
-par(mfrow = c(2, 2), mgp = c(2, 1, 0), mar = c(3, 3.5, 2, 1))
-for (i in 1:4){
-  curve(growth_rate(a = 1, b = b2_list[i], d = d2_list[i], x = x),
-    lwd = 2.5, from = 0, to = R_max[i], xaxt = 'n', yaxt = 'n', xlab = '',
-    ylab = 'Growth Rate', cex.lab = 2)
-  curve(growth_rate(a = 1, b = b1, d = d1_list[i], x = x), add = T, lwd = 2.5)
-  abline(h = 0, lwd = 1.5)
-  title(xlab = 'R', line = 1.3, cex.lab = 2)
-  axis(side = 2, at = 0, labels = '0', cex.axis = 1.5, las = 1)
-  legend('topleft', legend_list[i], cex = 1.5, bty = 'n')
-}
-
-dev.off()
-
-#### Figure 2 ####
-png(filename = 'Fig2.png', width = 800, height = 800)
-
 a1 = 1
 a2 = 1
 b1 = 10
@@ -127,9 +104,9 @@ curve(a2 * (b1 + 1) / a1 / (b2 + 1) * x, lty = 'dashed', from = 0,
 curve(a2 / (a1 / x - b1 + b2), lty = 'dashed', from = 0,
   to = a1 / (1 + b1), lwd = 2, add = T)
 
-text(a1 * (b1 - 1) / b1 / (b1 + 1) * 0.5, a2 * (b2 - 1) / b2 / (b2 + 1) * 0.5,
+text(a1 * (b1 - 1) / b1 / (b1 + 1) / 4, a2 * (b2 - 1) / b2 / (b2 + 1) * 0.5,
   'C', cex = 2)
-text(a1 * (b1 - 1) / b1 / (b1 + 1) * 0.5,
+text(a1 * (b1 - 1) / b1 / (b1 + 1) / 4,
   a2 * (b2 - 1) / b2 / (b2 + 1) * 0.5 + a2 / (1 + b2) * 0.5, 'A', cex = 2)
 text(a1 * (b1 - 1) / b1 / (b1 + 1) * 0.5 + a1 / (1 + b1) * 0.5,
   a2 * (b2 - 1) / b2 / (b2 + 1) * 0.5, 'D', cex = 2)
@@ -145,8 +122,8 @@ polygon(x, y, density = 30, col = 'black', angle = 90)
 
 dev.off()
 
-#### Figure 3 ####
-png(filename = 'Fig3.png', width = 800, height = 800)
+#### Figure 2 ####
+png(filename = 'Fig2.png', width = 800, height = 800)
 
 b_grid = expand.grid(b1 = do.breaks(c(0, 10), 20), b2 = do.breaks(c(0, 10), 20))
 for (i in 1:dim(b_grid)[1]){
@@ -206,21 +183,22 @@ grid.arrange(plot1, plot2, plot3, plot4, nrow = 2, ncol = 2)
 
 dev.off()
 
-#### Figure 4 ####
-png(filename = 'Fig4.png', width = 800, height = 600)
+#### Figure 3 ####
+png(filename = 'Fig3.png', width = 800, height = 600)
 
 par(mfcol = c(2, 3), oma = c(0, 1, 0, 0), mar = c(6, 5, 4, 2))
 b1_list = c(3, 5, 10)
 b2_list = c(1, 1.5, 3)
 x_lim = max((b1_list - 1)/b1_list/(b1_list + 1))
 y_lim = 1 / (min(b2_list) + 1)
+main_lab_list = c('(a)', '(b)', '(c)', '(d)', '(e)', '(f)')
 for (i in 1:length(b1_list)){
   b1 = b1_list[i]
   b2 = 1.5
-  plot_pot_rea(b1, b2, x_lim, y_lim)
+  plot_pot_rea(b1, b2, x_lim, y_lim, main_lab_list[i])
   b1 = 10
   b2 = b2_list[i]
-  plot_pot_rea(b1, b2, x_lim, y_lim)
+  plot_pot_rea(b1, b2, x_lim, y_lim, main_lab_list[i + 3])
 }
 
 dev.off()
